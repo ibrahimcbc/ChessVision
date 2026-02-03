@@ -77,4 +77,18 @@ These results demonstrate that object detection significantly improves robustnes
 
 ---
 
-## 📂 Repository Structure
+## 🧪 Experiments & Evaluation
+
+All models are evaluated on a custom dataset of real chessboard images with:
+- Varying orientations and viewpoints  
+- Different lighting conditions  
+- Multiple game states and piece densities  
+
+Quantitative metrics (IoU, Dice, Precision, Recall, mAP) and qualitative visualizations are reported in the accompanying project report.
+
+---
+
+## 🛠️ Installation
+
+```bash
+pip install -r requirements.txt

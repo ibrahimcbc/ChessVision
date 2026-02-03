@@ -92,3 +92,22 @@ Quantitative metrics (IoU, Dice, Precision, Recall, mAP) and qualitative visuali
 
 ```bash
 pip install -r requirements.txt
+
+▶️ Demo
+
+See:
+	•	DEMO_INSTRUCTIONS.md for running the full pipeline
+	•	pipeline_and_fen_generation.ipynb for an end-to-end demo
+
+The output includes:
+	•	Detected board and pieces
+	•	Generated FEN string
+	•	Best-move visualization overlaid on the original image
+
+⸻
+
+⚠️ Limitations
+	•	Assumes a standard 8×8 chessboard
+	•	Performance may degrade under heavy occlusion or extreme blur
+	•	Does not support non-standard boards or piece sets
+

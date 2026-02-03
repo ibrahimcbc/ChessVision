@@ -90,8 +90,9 @@ Quantitative metrics (IoU, Dice, Precision, Recall, mAP) and qualitative visuali
 
 ## 🛠️ Installation
 
-```bash
 pip install -r requirements.txt
+
+---
 
 ▶️ Demo
 

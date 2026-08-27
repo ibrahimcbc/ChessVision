@@ -8,107 +8,157 @@ The project combines deep learning–based perception with geometric reasoning a
 
 ## 🔍 Problem Overview
 
-Understanding a chess position from an image is a challenging task due to:
-- Perspective distortion and varying camera viewpoints  
-- Occlusions and visually similar chess pieces  
-- The need to convert pixel-level information into a symbolic board representation  
+Understanding a chess position from an image is challenging because of:
 
-ChessVision+ addresses these challenges by designing a modular pipeline that decomposes the problem into interpretable stages, enabling both robustness and extensibility.
+- Perspective distortion and varying camera viewpoints
+- Occlusions and visually similar chess pieces
+- The need to convert pixel-level information into a symbolic board representation
+
+ChessVision+ addresses these challenges with a modular pipeline that decomposes the problem into interpretable stages, enabling both robustness and extensibility.
 
 ---
 
 ## 🧠 System Pipeline
 
-The system follows a multi-stage pipeline:
-
-1. **Board Segmentation (UNet)**  
+1. **Board segmentation (UNet)**
    Localizes the chessboard in the input image using semantic segmentation.
 
-2. **Perspective Warping & Normalization**  
+2. **Perspective warping & normalization**
    Applies a homography transformation to obtain a canonical top-down board view.
 
-3. **Piece Recognition**  
-   - **Initial approach:** Square-based classification with ResNet18 (abandoned)  
-   - **Final approach:** YOLO-based object detection on the original image
+3. **Piece recognition**
+   - *Initial approach:* square-based classification with ResNet18 (abandoned — see below)
+   - *Final approach:* YOLO-based object detection on the original image
 
-4. **Grid Mapping**  
+4. **Grid mapping**
    Projects detected piece locations onto an 8×8 board grid.
 
-5. **FEN Generation**  
+5. **FEN generation**
    Converts the grid representation into Forsyth–Edwards Notation (FEN).
 
-6. **Chess Engine Integration**  
+6. **Chess engine integration**
    Uses Stockfish to compute and visualize the best move.
 
 ---
 
 ## 🚧 Why Square-Based Classification Failed
 
-An early design classified each board square independently using a ResNet18 model.  
-This approach proved unreliable due to:
-- Loss of 3D cues after perspective warping reminds only piece bases  
-- High visual similarity between different pieces  
-- No explicit *empty square* class, leading to forced misclassifications  
+An early design classified each board square independently using a ResNet18 model. This approach proved unreliable for three reasons:
 
-These limitations motivated a shift to an object detection formulation.
+- Perspective warping removes 3D height cues, leaving mostly the piece bases visible
+- Different pieces look highly similar at the base level
+- There was no explicit *empty square* class, forcing the model into misclassifications
+
+These limitations motivated a shift to an object detection formulation, which operates on the original image and preserves the 3D cues that distinguish pieces.
+
+---
+
+## 🧰 Tech Stack
+
+| Area | Tools |
+|---|---|
+| Deep learning | PyTorch, torchvision |
+| Segmentation | segmentation-models-pytorch (UNet) |
+| Object detection | YOLOv8 (Ultralytics) |
+| Image processing | OpenCV, Pillow |
+| Data & evaluation | NumPy, pandas, scikit-learn |
+| Visualization | Matplotlib, seaborn |
+| Chess logic | Stockfish |
 
 ---
 
 ## 🚀 Key Results
 
-### Board Segmentation (UNet)
-- **IoU:** 0.9848  
-- **Dice (F1):** 0.9923  
-- **Success rate:** 100% (43/43 test images)  
-- **Avg. runtime:** ~101 ms per image  
+### Board segmentation (UNet)
 
-### Piece Detection (YOLO)
-- **Precision:** 0.9757  
-- **Recall:** 0.9874  
-- **mAP@0.5:** 0.9848  
-- **mAP@0.5:0.95:** 0.7707  
+| Metric | Value |
+|---|---|
+| IoU | 0.9848 |
+| Dice (F1) | 0.9923 |
+| Success rate | 100% (43/43 test images) |
+| Avg. runtime | ~101 ms per image |
 
-### End-to-End Pipeline
-- **Success rate:** 100%  
-- **Average runtime:** ~807 ms  
-- **Median runtime:** ~477 ms  
+### Piece detection (YOLO)
 
-These results demonstrate that object detection significantly improves robustness and accuracy compared to square-based classification.
+| Metric | Value |
+|---|---|
+| Precision | 0.9757 |
+| Recall | 0.9874 |
+| mAP@0.5 | 0.9848 |
+| mAP@0.5:0.95 | 0.7707 |
+
+### End-to-end pipeline
+
+| Metric | Value |
+|---|---|
+| Success rate | 100% |
+| Avg. runtime | ~807 ms |
+| Median runtime | ~477 ms |
+
+Object detection significantly improves robustness and accuracy over square-based classification.
 
 ---
 
 ## 🧪 Experiments & Evaluation
 
-All models are evaluated on a custom dataset of real chessboard images with:
-- Varying orientations and viewpoints  
-- Different lighting conditions  
-- Multiple game states and piece densities  
+All models are evaluated on a custom dataset of real chessboard images covering:
 
-Quantitative metrics (IoU, Dice, Precision, Recall, mAP) and qualitative visualizations are reported in the accompanying project report.
+- Varying orientations and viewpoints
+- Different lighting conditions
+- Multiple game states and piece densities
+
+Quantitative metrics (IoU, Dice, precision, recall, mAP) and qualitative visualizations are reported in the accompanying project report.
 
 ---
 
 ## 🛠️ Installation
 
+```bash
 pip install -r requirements.txt
+```
+
+Stockfish must be installed separately and available on your `PATH`.
 
 ---
 
-▶️ Demo
+## ▶️ Demo
 
-See:
-	•	DEMO_INSTRUCTIONS.md for running the full pipeline
-	•	pipeline_and_fen_generation.ipynb for an end-to-end demo
+- [`DEMO_INSTRUCTIONS.md`](DEMO_INSTRUCTIONS.md) — how to run the full pipeline
+- [`pipeline_&_FEN_generation.ipynb`](pipeline_&_FEN_generation.ipynb) — end-to-end demo notebook
 
 The output includes:
-	•	Detected board and pieces
-	•	Generated FEN string
-	•	Best-move visualization overlaid on the original image
 
-⸻
+- Detected board and pieces
+- Generated FEN string
+- Best-move visualization overlaid on the original image
 
-⚠️ Limitations
-	•	Assumes a standard 8×8 chessboard
-	•	Performance may degrade under heavy occlusion or extreme blur
-	•	Does not support non-standard boards or piece sets
+---
 
+## 📁 Repository Structure
+
+| File | Purpose |
+|---|---|
+| `unet_training.ipynb` | Trains the UNet board segmentation model |
+| `unet_inference_demo.ipynb` | Runs segmentation on new images |
+| `batch_warp_from_unet.ipynb` | Applies homography warping in batch |
+| `square_extraction.ipynb` | Extracts individual squares from a warped board |
+| `square_labeling_from_bboxes.ipynb` | Derives square labels from bounding boxes |
+| `resnet_piece_classifier_training.ipynb` | Square-based classifier (abandoned approach) |
+| `yolov8-piece_detection/` | YOLO training and inference for piece detection |
+| `classify_squares/` | Square classification experiments |
+| `csv_bbox_visualization.ipynb` | Visualizes annotated bounding boxes |
+| `pipeline_&_FEN_generation.ipynb` | Full pipeline: image → FEN → best move |
+
+---
+
+## ⚠️ Limitations
+
+- Assumes a standard 8×8 chessboard
+- Performance may degrade under heavy occlusion or extreme blur
+- Non-standard boards and piece sets are not supported
+
+---
+
+## 📄 Report
+
+Full methodology, ablations and qualitative results: [`report.pdf`](report.pdf)
